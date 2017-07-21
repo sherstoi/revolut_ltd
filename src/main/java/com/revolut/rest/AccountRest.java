@@ -6,7 +6,6 @@ import com.revolut.service.AccountService;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -26,7 +25,7 @@ public class AccountRest {
     }
 
     @GET
-    @Path("/showall")
+    @Path("/findall")
     public List<Account> findAll() {
         return accountService.findAllAccounts();
     }
@@ -38,32 +37,21 @@ public class AccountRest {
     }
 
     @POST
-    @Path("/withdrawn")
-    public void withdrawn(@QueryParam("balance") BigDecimal balance, Account account) {
-        accountService.withdrawn(account, balance);
-    }
-
-    @POST
-    @Path("/deposit")
-    public void deposit(@QueryParam("balance") BigDecimal amount, Account account) {
-        accountService.deposit(account, amount);
-    }
-
-    @POST
     @Path("/create")
     public void createAccount(Account account) {
         accountService.saveAccount(account);
     }
 
-    @POST
-    @Path("/transfer")
-    public void createAccount(@QueryParam("money") BigDecimal money, Account accountFrom, Account accountTo) {
-        accountService.transferMoney(accountFrom, accountTo, money);
+    @DELETE
+    @Path("/delete")
+    public void deleteAccount(@QueryParam("accountId") Long accountId) {
+        accountService.deleteAccountById(accountId);
     }
 
-    @PUT
+    @DELETE
     @Path("/deleteall")
     public void deleteAllAccounts() {
         accountService.deleteAllAccounts();
     }
+
 }

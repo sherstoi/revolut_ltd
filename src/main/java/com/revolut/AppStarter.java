@@ -1,5 +1,6 @@
 package com.revolut;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -30,6 +31,7 @@ public class AppStarter extends Application<ServerConfig> {
     public void run(ServerConfig serverConfig, Environment environment) throws Exception {
         Injector injector = createInjector(serverConfig);
         environment.jersey().register(injector.getInstance(AccountRest.class));
+        environment.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     public static void main(String[] args) throws Exception {

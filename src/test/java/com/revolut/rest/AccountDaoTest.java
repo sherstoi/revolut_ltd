@@ -8,8 +8,8 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -30,8 +30,8 @@ public class AccountDaoTest {
         accountStorageDao.saveAccount(accountDebit);
         assertThat(accountStorageDao.count(), is(1));
         assertThat(accountStorageDao.getAllAccounts().size(), is(1));
-        Optional<Account> account = accountStorageDao.findAccountById(accountDebit.getAccountId());
-        assertThat(account.isPresent(), is(true));
+        Account account = accountStorageDao.findAccountById(accountDebit.getAccountId());
+        assertThat(account, notNullValue());
         accountStorageDao.deleteAllAccounts();
         assertThat(accountStorageDao.count(), is(0));
         accountStorageDao.saveAccounts(accountList);
@@ -48,5 +48,4 @@ public class AccountDaoTest {
         accountStorageDao.deleteAllAccounts();
         assertThat(accountStorageDao.count(), is(0));
     }
-
 }

@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 public class AccountStorageDaoImpl implements AccountStorageDao {
     private final ConcurrentHashMap<Long, Account> accountMap = new ConcurrentHashMap<>();
 
-    public Optional<Account> findAccountById(Long accountId) {
-        return Optional.ofNullable(accountMap.get(accountId));
+    public Account findAccountById(Long accountId) {
+        return accountMap.get(accountId);
     }
 
     public List<Account> getAllAccounts() {
@@ -31,6 +31,9 @@ public class AccountStorageDaoImpl implements AccountStorageDao {
     }
 
     public void saveAccount(Account account) {
+        if (account.getLock() == null) {
+            account.setLock(new Object());
+        }
         Optional.ofNullable(account).
                 map(Account::getAccountId).
                 ifPresent(accountId -> accountMap.put(accountId, account));

@@ -34,38 +34,62 @@ public class AccountServiceImpl implements AccountService {
         accountStorageDao.saveAccounts(accountList);
     }
 
-    public void withdrawn(Account account, BigDecimal balance) {
-        synchronized (account.getLock()) {
+    private boolean withdrawn(Account account, BigDecimal balance) {
+        boolean wasUpdated = false;
+        if (account != null) {
             BigDecimal newBalance = account.getBalance().subtract(balance);
             if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
                 throw new NotEnoughtMoneyException("There is not enought money on account to make withdrawn operation!");
             }
             account.setBalance(newBalance);
+            wasUpdated = true;
         }
-        saveAccount(account);
+
+        return wasUpdated;
     }
 
-    public void deposit(Account account, BigDecimal balance) {
-        synchronized (account.getLock()) {
+    private boolean deposit(Account account, BigDecimal balance) {
+        boolean wasUpdated = false;
+        if (account != null) {
             BigDecimal newBalance = account.getBalance().add(balance);
             account.setBalance(newBalance);
+            wasUpdated = true;
         }
-        saveAccount(account);
+
+        return wasUpdated;
     }
 
-    public void transferMoney(Account fromAccount, Account toAccount, BigDecimal money) {
-        Object lock1 = fromAccount.getAccountId() < toAccount.getAccountId() ?
-                fromAccount.getLock() : toAccount.getLock();
-        Object lock2 = fromAccount.getAccountId() < toAccount.getAccountId() ?
-                toAccount.getLock() : fromAccount.getLock();
-        synchronized (lock1) {
-            synchronized (lock2) {
-                withdrawn(fromAccount, money);
-                deposit(toAccount, money);
+    public Boolean moneyTransfer(Long fromAccountId, Long toAccountId, BigDecimal money) {
+        Boolean moneyWasTransfered = false;
+        Account fromAccount = accountStorageDao.findAccountById(fromAccountId);
+        Account toAccount = accountStorageDao.findAccountById(toAccountId);
+
+        if (fromAccount != null && toAccount != null) {
+            Object lock1 = fromAccount.getAccountId() < toAccount.getAccountId() ?
+                    fromAccount.getLock() : toAccount.getLock();
+            Object lock2 = fromAccount.getAccountId() < toAccount.getAccountId() ?
+                    toAccount.getLock() : fromAccount.getLock();
+
+            synchronized (lock1) {
+                synchronized (lock2) {
+                    BigDecimal accFromBalance = fromAccount.getBalance();
+                    BigDecimal accToBalance = toAccount.getBalance();
+                    boolean wasDepos = false, wasWithdraw = false;
+                    try {
+                        wasWithdraw = withdrawn(fromAccount, money);
+                        wasDepos = deposit(toAccount, money);
+                        moneyWasTransfered = true;
+                    } finally {
+                        if (!wasDepos || !wasWithdraw) {
+                            fromAccount.setBalance(accFromBalance);
+                            toAccount.setBalance(accToBalance);
+                        }
+                    }
+                }
             }
         }
-        saveAccount(fromAccount);
-        saveAccount(toAccount);
+
+        return moneyWasTransfered;
     }
 
     public List<Account> findAllAccounts() {
@@ -73,9 +97,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public Account findAccountById(Long accountId) {
-        return accountStorageDao.findAccountById(accountId).
-                map(account -> account).
-                orElse(null);
+        return accountStorageDao.findAccountById(accountId);
     }
 
     public void deleteAccountById(Long accountId) {

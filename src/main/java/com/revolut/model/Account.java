@@ -1,6 +1,11 @@
 package com.revolut.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.revolut.config.JSONValueDeserializer;
 
 import java.math.BigDecimal;
 
@@ -11,8 +16,8 @@ import java.math.BigDecimal;
  * @Version 1.0
  */
 public class Account {
-    private final Object lock = new Object();
-
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Object lock;
     @JsonProperty
     private Long accountId;
     @JsonProperty
@@ -22,6 +27,7 @@ public class Account {
         Account account = new Account();
         account.setAccountId(accountId);
         account.setBalance(balance);
+        account.setLock(new Object());
 
         return account;
     }
@@ -45,4 +51,7 @@ public class Account {
     public Object getLock() {
         return lock;
     }
+
+    public void setLock(Object lock) {this.lock = lock;}
+
 }
