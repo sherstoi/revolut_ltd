@@ -5,6 +5,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.revolut.config.ServerConfig;
+import com.revolut.exceptions.CustomExceptionHandler;
 import com.revolut.repository.AccountStorageDao;
 import com.revolut.repository.impl.AccountStorageDaoImpl;
 import com.revolut.rest.AccountRest;
@@ -30,7 +31,9 @@ public class AppStarter extends Application<ServerConfig> {
     @Override
     public void run(ServerConfig serverConfig, Environment environment) throws Exception {
         Injector injector = createInjector(serverConfig);
+
         environment.jersey().register(injector.getInstance(AccountRest.class));
+        environment.jersey().register(new CustomExceptionHandler());
         environment.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
