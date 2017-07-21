@@ -6,6 +6,7 @@ import com.revolut.service.AccountService;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -54,4 +55,10 @@ public class AccountRest {
         accountService.deleteAllAccounts();
     }
 
+    @POST
+    @Path("/transfer")
+    public void transferMoney(@QueryParam("fromAccId") Long fromAccId, @QueryParam("toAccId") Long toAccId,
+                              @QueryParam("balance")BigDecimal balance) {
+        accountService.moneyTransfer(fromAccId, toAccId, balance);
+    }
 }
